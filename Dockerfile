@@ -3,7 +3,7 @@
 # Set full semantic version of the base image with variant tag
 FROM python:3.12.7-slim-bookworm
 
-# https://github.com/pythoninthegrass/jupyter-notebook/blob/main/images/docker-stacks-foundation/Dockerfile
+# https://github.com/jupyter/docker-stacks/blob/main/images/docker-stacks-foundation/Dockerfile
 
 # Avoid warnings by switching to noninteractive
 ENV DEBIAN_FRONTEND=noninteractive
