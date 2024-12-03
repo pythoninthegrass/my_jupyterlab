@@ -56,4 +56,11 @@ docker compose down
 - [ ] Add `dive` and reduce image size
 - [ ] Migrate to `alpine` (along with musl libc changes)
 - [ ] Create multistage build: `Docker.multistage`
+- [ ] Add HTTPS 
+  - [mkcert](https://computingforgeeks.com/create-locally-trusted-ssl-certificates-on-linux-macos-using-mkcert/)
+    ```bash
+    mkcert -key-file key.pem -cert-file cert.pem jupyter.local *.jupyter.local
+    mkcert -install
+    ```
+  - [LetsEncrypt](https://jupyter-server.readthedocs.io/en/latest/operators/public-server.html#using-let-s-encrypt)
 - [ ] Setup CI to auto publish to docker.io and ghcr.io registries
