@@ -1,0 +1,10 @@
+httpx<0.28.0
+jupyter_server==2.14.2
+jupyterlab==4.2.2
+matplotlib==3.8.4
+metpy==1.6.2
+notebook==7.2.2
+numpy==1.26.4
+pandas==2.2.2
+scipy==1.13.1
+xarray==2024.6.0
