@@ -55,6 +55,9 @@ RUN python -m pip install -r requirements.txt
 # https://jupyterlab.readthedocs.io/en/stable/user/announcements.html
 RUN jupyter labextension disable '@jupyterlab/apputils-extension:announcements'
 
+# Give user permissions on WORKDIR
+RUN chown -R ${USERNAME}:${USERNAME} /app
+
 # Switch to non-root user
 USER $USERNAME
 
