@@ -22,7 +22,7 @@ Annotated docker image for running a Jupyter notebook with the MetPy library.
 docker build -t metpy_test .
 
 # run the container
-docker run -it --rm -p 8888:8888 -v $(pwd):/home/jovyan metpy_test
+docker run  -it --rm --name metpy_test -p 8888:8888 -v ~/metpy_test:/app metpy_test
 ```
 
 ### Docker Compose
