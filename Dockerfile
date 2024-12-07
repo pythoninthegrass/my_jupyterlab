@@ -1,7 +1,8 @@
 # syntax=docker/dockerfile:1.7.0
 
 # Set full semantic version of the base image with variant tag
-FROM python:3.12.7-slim-bookworm
+ARG ROOT_IMAGE=python:3.12.7-slim-bookworm
+FROM ${ROOT_IMAGE}
 
 # https://github.com/jupyter/docker-stacks/blob/main/images/docker-stacks-foundation/Dockerfile
 
@@ -34,17 +35,18 @@ ENV VIRTUAL_ENV=/opt/venv
 ENV PATH="${VIRTUAL_ENV}/bin:$PATH"
 
 # Create a virtual environment
-RUN python3 -m venv $VIRTUAL_ENV
-
-# Create a working directory and `cd` into it
-WORKDIR /app
+RUN python3 -m venv ${VIRTUAL_ENV}
 
 # https://code.visualstudio.com/remote/advancedcontainers/add-nonroot-user#_creating-a-nonroot-user
-ARG USERNAME=jupyter
+ARG USERNAME=jovyan
 ARG USER_UID=1000
 ARG USER_GID=$USER_UID
-RUN groupadd --gid $USER_GID $USERNAME \
-    && useradd --uid $USER_UID --gid $USER_GID -m $USERNAME
+RUN groupadd --gid ${USER_GID} ${USERNAME} \
+    && useradd --uid ${USER_UID} --gid ${USER_GID} -m ${USERNAME}
+
+# Create a working directory and `cd` into it
+ARG APP_DIR=/app
+WORKDIR ${APP_DIR}
 
 # Copy requirements.txt to WORKDIR with the correct ownership
 COPY --chown=${USERNAME}:${USERNAME} requirements.txt .
@@ -56,10 +58,10 @@ RUN python -m pip install -r requirements.txt
 RUN jupyter labextension disable '@jupyterlab/apputils-extension:announcements'
 
 # Give user permissions on WORKDIR
-RUN chown -R ${USERNAME}:${USERNAME} /app
+RUN chown -R ${USERNAME}:${USERNAME} ${APP_DIR}
 
 # Switch to non-root user
-USER $USERNAME
+USER ${USERNAME}
 
 # Allow for port override at build time via ARG
 # ENV is present at runtime (i.e., run `printenv` in the container)
