@@ -13,7 +13,6 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update \
     && apt-get upgrade --yes \
     && apt-get install --yes --no-install-recommends \
-    bzip2 \
     ca-certificates \
     locales \
     netbase \
@@ -40,7 +39,7 @@ RUN python3 -m venv ${VIRTUAL_ENV}
 # https://code.visualstudio.com/remote/advancedcontainers/add-nonroot-user#_creating-a-nonroot-user
 ARG USERNAME=jovyan
 ARG USER_UID=1000
-ARG USER_GID=$USER_UID
+ARG USER_GID=${USER_UID}
 RUN groupadd --gid ${USER_GID} ${USERNAME} \
     && useradd --uid ${USER_UID} --gid ${USER_GID} -m ${USERNAME}
 
