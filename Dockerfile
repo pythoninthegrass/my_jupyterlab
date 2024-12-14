@@ -1,34 +1,50 @@
 # syntax=docker/dockerfile:1.7.0
 
 # Set full semantic version of the base image with variant tag
-ARG ROOT_IMAGE=python:3.12.7-slim-bookworm
+ARG ROOT_IMAGE=python:3.12.7-alpine3.20
 FROM ${ROOT_IMAGE}
 
 # https://github.com/jupyter/docker-stacks/blob/main/images/docker-stacks-foundation/Dockerfile
 
 # Avoid warnings by switching to noninteractive
 # https://serverfault.com/questions/618994/when-building-from-dockerfile-debian-ubuntu-package-install-debconf-noninteract
-ARG DEBIAN_FRONTEND=noninteractive
+# ARG DEBIAN_FRONTEND=noninteractive
 
 # Install required packages
-RUN apt-get update \
-    && apt-get upgrade --yes \
-    && apt-get install --yes --no-install-recommends \
+RUN apk update \
+    && apk upgrade \
+    && apk add \
     ca-certificates \
-    locales \
-    netbase \
+    gcc \
+    linux-headers \
+    musl-dev \
+    musl-locales \
+    musl-locales-lang \
+    net-tools \
+    proj \
+    proj-dev \
+    proj-util \
+    python3-dev \
+    tini \
     wget \
-    && apt-get clean && rm -rf /var/lib/apt/lists/* \
-    && echo "en_US.UTF-8 UTF-8" > /etc/locale.gen \
-    && echo "C.UTF-8 UTF-8" >> /etc/locale.gen \
-    && locale-gen
+    && apk cache clean && rm -rf /var/cache/apk/* \
+    && echo "en_US.UTF-8 UTF-8" > /etc/locale.conf \
+    && echo "C.UTF-8 UTF-8" >> /etc/locale.conf
+
+ENV LANG en_US.UTF-8
+ENV LC_ALL en_US.UTF-8
+ENV LANGUAGE en_US.UTF-8
+
+ENV PROJ_DIR=/usr
+ENV PROJ_LIBDIR=/usr/lib
+ENV PROJ_INCDIR=/usr/include/proj
 
 # https://jupyter-server.readthedocs.io/en/latest/operators/public-server.html#docker-cmd
 # TARGETARCH is the architecture of the target platform (e.g., amd64, arm64, etc.)
-ARG TINI_VERSION=v0.19.0
-ARG TARGETARCH
-ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini-${TARGETARCH} /usr/bin/tini
-RUN chmod +x /usr/bin/tini
+#ARG TINI_VERSION=v0.19.0
+#ARG TARGETARCH
+#ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini-${TARGETARCH} /usr/bin/tini
+#RUN chmod +x /usr/bin/tini
 
 # Set virtual environment variables in PATH
 ENV VIRTUAL_ENV=/opt/venv
@@ -41,8 +57,8 @@ RUN python3 -m venv ${VIRTUAL_ENV}
 ARG USERNAME=jovyan
 ARG USER_UID=1000
 ARG USER_GID=${USER_UID}
-RUN groupadd --gid ${USER_GID} ${USERNAME} \
-    && useradd --uid ${USER_UID} --gid ${USER_GID} -m ${USERNAME}
+RUN addgroup -g ${USER_GID} ${USERNAME} \
+    && adduser -u ${USER_UID} -G ${USERNAME} -D -s /bin/sh ${USERNAME}
 
 # Create a working directory and `cd` into it
 ARG APP_DIR=/app
@@ -76,7 +92,7 @@ ARG JUPYTER_SERVER_CONFIG="/home/${USERNAME}/.jupyter/jupyter_server_config.py"
 
 # https://docs.docker.com/reference/dockerfile/#example-running-a-multi-line-script
 RUN <<EOF
-#!/bin/bash
+#!/bin/sh
 set -e
 tee "${JUPYTER_SERVER_CONFIG}" <<EOL
 c = get_config()  #noqa
@@ -101,7 +117,7 @@ EOF
 EXPOSE ${PORT}
 
 # Use tini to reap zombie processes and stop the container gracefully via SIGINT/SIGTERM
-ENTRYPOINT ["/usr/bin/tini", "--"]
+ENTRYPOINT ["/sbin/tini", "--"]
 
 # Run the notebook server with $JUPYTER_SERVER_CONFIG
 CMD ["jupyter", "lab"]
