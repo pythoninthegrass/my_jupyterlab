@@ -51,7 +51,7 @@ WORKDIR ${APP_DIR}
 COPY --chown=${USERNAME}:${USERNAME} requirements.txt .
 
 # Install python deps using pip as a module (ensures pip uses the correct python version)
-RUN python -m pip install -r requirements.txt
+RUN python -m pip install --no-cache-dir -r requirements.txt
 
 # https://jupyterlab.readthedocs.io/en/stable/user/announcements.html
 RUN jupyter labextension disable '@jupyterlab/apputils-extension:announcements'
