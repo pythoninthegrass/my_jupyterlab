@@ -84,8 +84,8 @@ c.ServerApp.open_browser = False
 c.ServerApp.port = ${PORT}
 
 # # Token authentication
-# c.ServerApp.token = ''      # Empty string disables token authentication
-# c.ServerApp.password = ''   # Empty string allows no password
+# c.IdentityProvider.token = ''      # Empty string disables token authentication
+# c.PasswordIdentityProvider.hashed_password = ''   # Empty string allows no password
 
 # Security settings
 c.ServerApp.allow_remote_access = True
