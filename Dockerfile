@@ -7,7 +7,8 @@ FROM ${ROOT_IMAGE}
 # https://github.com/jupyter/docker-stacks/blob/main/images/docker-stacks-foundation/Dockerfile
 
 # Avoid warnings by switching to noninteractive
-ENV DEBIAN_FRONTEND=noninteractive
+# https://serverfault.com/questions/618994/when-building-from-dockerfile-debian-ubuntu-package-install-debconf-noninteract
+ARG DEBIAN_FRONTEND=noninteractive
 
 # Install required packages
 RUN apt-get update \
