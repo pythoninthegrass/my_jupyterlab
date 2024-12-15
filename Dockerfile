@@ -41,32 +41,45 @@ RUN python -m pip install --no-cache-dir -r requirements.txt
 
 FROM python:3.12.7-slim-bookworm
 
-ENV VIRTUAL_ENV=/opt/venv
+# https://jupyter-server.readthedocs.io/en/latest/operators/public-server.html#docker-cmd
+# TARGETARCH is the architecture of the target platform (e.g., amd64, arm64, etc.)
+ARG TINI_VERSION=v0.19.0
+ARG TARGETARCH
+ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini-${TARGETARCH} /usr/bin/tini
+RUN chmod +x /usr/bin/tini
 
-COPY --from=build ${VIRTUAL_ENV} ${VIRTUAL_ENV}
-ENV PATH="${VIRTUAL_ENV}/bin:$PATH"
+# Use tini to reap zombie processes and stop the container gracefully via SIGINT/SIGTERM
+ENTRYPOINT ["/usr/bin/tini", "--"]
 
 # https://code.visualstudio.com/remote/advancedcontainers/add-nonroot-user#_creating-a-nonroot-user
-#ARG USERNAME=jovyan
-#ARG USER_UID=1000
-#ARG USER_GID=${USER_UID}
-#RUN groupadd --gid ${USER_GID} ${USERNAME} \
-#    && useradd --uid ${USER_UID} --gid ${USER_GID} -m ${USERNAME}
+ARG USERNAME=jovyan
+ARG USER_UID=1000
+ARG USER_GID=${USER_UID}
+RUN groupadd --gid ${USER_GID} ${USERNAME} \
+    && useradd --uid ${USER_UID} --gid ${USER_GID} -m ${USERNAME}
+
+# Switch to non-root user
+USER ${USERNAME}
+
+ENV VIRTUAL_ENV=/opt/venv
+
+COPY --chown=${USER_UID}:${USER_GID} --from=build ${VIRTUAL_ENV} ${VIRTUAL_ENV}
+ENV PATH="${VIRTUAL_ENV}/bin:$PATH"
 
 # Allow for port override at build time via ARG
 # ENV is present at runtime (i.e., run `printenv` in the container)
 ARG PORT=8888
 ENV PORT=${PORT}
 
-# # https://jupyterlab.readthedocs.io/en/stable/user/announcements.html
+# https://jupyterlab.readthedocs.io/en/stable/user/announcements.html
 RUN jupyter labextension disable '@jupyterlab/apputils-extension:announcements'
 
-# # https://jupyter-server.readthedocs.io/en/latest/operators/public-server.html#running-a-public-notebook-server
+# https://jupyter-server.readthedocs.io/en/latest/operators/public-server.html#running-a-public-notebook-server
 RUN jupyter server --generate-config
 
-# # https://jupyter-server.readthedocs.io/en/latest/operators/security.html#security-in-the-jupyter-server
-# #ARG JUPYTER_SERVER_CONFIG="/home/jovyan/.jupyter/jupyter_server_config.py"
-ARG JUPYTER_SERVER_CONFIG="/root/.jupyter/jupyter_server_config.py"
+# https://jupyter-server.readthedocs.io/en/latest/operators/security.html#security-in-the-jupyter-server
+# ARG JUPYTER_SERVER_CONFIG="/home/jovyan/.jupyter/jupyter_server_config.py"
+ARG JUPYTER_SERVER_CONFIG="/home/${USERNAME}/.jupyter/jupyter_server_config.py"
 
 # https://docs.docker.com/reference/dockerfile/#example-running-a-multi-line-script
 RUN <<EOF
@@ -97,22 +110,6 @@ EXPOSE ${PORT}
 # Create a working directory and `cd` into it
 ARG APP_DIR=/app
 WORKDIR ${APP_DIR}
-
-# Give user permissions on WORKDIR
-#RUN chown -R ${USERNAME}:${USERNAME} ${APP_DIR}
-
-# Switch to non-root user
-#USER ${USERNAME}
-
-# https://jupyter-server.readthedocs.io/en/latest/operators/public-server.html#docker-cmd
-# TARGETARCH is the architecture of the target platform (e.g., amd64, arm64, etc.)
-ARG TINI_VERSION=v0.19.0
-ARG TARGETARCH
-ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini-${TARGETARCH} /usr/bin/tini
-RUN chmod +x /usr/bin/tini
-
-# Use tini to reap zombie processes and stop the container gracefully via SIGINT/SIGTERM
-ENTRYPOINT ["/usr/bin/tini", "--"]
 
 # Run the notebook server with $JUPYTER_SERVER_CONFIG
 CMD ["jupyter", "lab"]
