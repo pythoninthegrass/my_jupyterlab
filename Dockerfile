@@ -6,14 +6,10 @@ FROM ${ROOT_IMAGE}
 
 # https://github.com/jupyter/docker-stacks/blob/main/images/docker-stacks-foundation/Dockerfile
 
-# Avoid warnings by switching to noninteractive
-# https://serverfault.com/questions/618994/when-building-from-dockerfile-debian-ubuntu-package-install-debconf-noninteract
-# ARG DEBIAN_FRONTEND=noninteractive
-
 # Install required packages
 RUN apk update \
     && apk upgrade \
-    && apk add \
+    && apk add --no-cache \
     ca-certificates \
     gcc \
     linux-headers \
@@ -27,7 +23,7 @@ RUN apk update \
     python3-dev \
     tini \
     wget \
-    && apk cache clean && rm -rf /var/cache/apk/* \
+    && rm -rf /var/cache/apk/* \
     && echo "en_US.UTF-8 UTF-8" > /etc/locale.conf \
     && echo "C.UTF-8 UTF-8" >> /etc/locale.conf
 
