@@ -24,15 +24,16 @@ RUN apt-get update \
 
 # Set virtual environment variables in PATH
 ENV VIRTUAL_ENV=/opt/venv
-ENV PATH="/opt/venv/bin:$PATH"
+ENV PATH="${VIRTUAL_ENV}/bin:$PATH"
 
 # Create a virtual environment
-RUN python3 -m venv /opt/venv
+RUN python3 -m venv ${VIRTUAL_ENV}
 
 # Create a working directory and `cd` into it
-WORKDIR /app
+ARG WORK_DIR=/app
+WORKDIR ${WORK_DIR}
 
-# Copy requirements.txt to WORKDIR with the correct ownership
+# Copy requirements.txt to WORKDIR
 COPY requirements.txt .
 
 # Install python deps using pip as a module (ensures pip uses the correct python version)
@@ -40,8 +41,10 @@ RUN python -m pip install --no-cache-dir -r requirements.txt
 
 FROM python:3.12.7-slim-bookworm
 
-COPY --from=build /opt/venv /opt/venv
-ENV PATH="/opt/venv/bin:$PATH"
+ENV VIRTUAL_ENV=/opt/venv
+
+COPY --from=build ${VIRTUAL_ENV} ${VIRTUAL_ENV}
+ENV PATH="${VIRTUAL_ENV}/bin:$PATH"
 
 # https://code.visualstudio.com/remote/advancedcontainers/add-nonroot-user#_creating-a-nonroot-user
 #ARG USERNAME=jovyan
