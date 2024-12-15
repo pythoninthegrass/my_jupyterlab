@@ -44,25 +44,26 @@ COPY --from=build /opt/venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
 # https://code.visualstudio.com/remote/advancedcontainers/add-nonroot-user#_creating-a-nonroot-user
-ARG USERNAME=jovyan
-ARG USER_UID=1000
-ARG USER_GID=${USER_UID}
-RUN groupadd --gid ${USER_GID} ${USERNAME} \
-    && useradd --uid ${USER_UID} --gid ${USER_GID} -m ${USERNAME}
+#ARG USERNAME=jovyan
+#ARG USER_UID=1000
+#ARG USER_GID=${USER_UID}
+#RUN groupadd --gid ${USER_GID} ${USERNAME} \
+#    && useradd --uid ${USER_UID} --gid ${USER_GID} -m ${USERNAME}
 
 # Allow for port override at build time via ARG
 # ENV is present at runtime (i.e., run `printenv` in the container)
 ARG PORT=8888
 ENV PORT=${PORT}
 
-# https://jupyterlab.readthedocs.io/en/stable/user/announcements.html
+# # https://jupyterlab.readthedocs.io/en/stable/user/announcements.html
 RUN jupyter labextension disable '@jupyterlab/apputils-extension:announcements'
 
-# https://jupyter-server.readthedocs.io/en/latest/operators/public-server.html#running-a-public-notebook-server
+# # https://jupyter-server.readthedocs.io/en/latest/operators/public-server.html#running-a-public-notebook-server
 RUN jupyter server --generate-config
 
-# https://jupyter-server.readthedocs.io/en/latest/operators/security.html#security-in-the-jupyter-server
-ARG JUPYTER_SERVER_CONFIG="/home/${USERNAME}/.jupyter/jupyter_server_config.py"
+# # https://jupyter-server.readthedocs.io/en/latest/operators/security.html#security-in-the-jupyter-server
+# #ARG JUPYTER_SERVER_CONFIG="/home/jovyan/.jupyter/jupyter_server_config.py"
+ARG JUPYTER_SERVER_CONFIG="/root/.jupyter/jupyter_server_config.py"
 
 # https://docs.docker.com/reference/dockerfile/#example-running-a-multi-line-script
 RUN <<EOF
@@ -95,10 +96,10 @@ ARG APP_DIR=/app
 WORKDIR ${APP_DIR}
 
 # Give user permissions on WORKDIR
-RUN chown -R ${USERNAME}:${USERNAME} ${APP_DIR}
+#RUN chown -R ${USERNAME}:${USERNAME} ${APP_DIR}
 
 # Switch to non-root user
-USER ${USERNAME}
+#USER ${USERNAME}
 
 # https://jupyter-server.readthedocs.io/en/latest/operators/public-server.html#docker-cmd
 # TARGETARCH is the architecture of the target platform (e.g., amd64, arm64, etc.)
