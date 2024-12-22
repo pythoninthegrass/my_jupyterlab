@@ -1,12 +1,11 @@
 services:
   jupyter:
+    container_name: metpy_test
     image: metpy_test
-    container_name: my-jupyter-notebook
     build:
       context: .
       dockerfile: Dockerfile
-    environment:
-      - USER=jupyter
-      - PORT=8888
+    volumes:
+      - ~/metpy_test:/app
     ports:
       - "${PORT:-8888}:8888"
