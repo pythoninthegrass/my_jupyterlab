@@ -1,5 +1,13 @@
 {
-    "dockerComposeFile": "docker-compose.yml",
-    "service": "jupyter",
-    "workspaceFolder": "/app"
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "jupyter",
+  "workspaceFolder": "/app",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-toolsai.jupyter",
+      ]
+    }
+  }
 }
